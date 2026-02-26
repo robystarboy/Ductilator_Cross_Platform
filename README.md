@@ -23,7 +23,7 @@ Ductilator is a professional tool for calculating air duct dimensions and proper
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR-USERNAME/Ductilator_Cross_Platform.git
+git clone https://github.com/robystarboy/Ductilator_Cross_Platform.git
 cd Ductilator_Cross_Platform
 
 # Restore dependencies
