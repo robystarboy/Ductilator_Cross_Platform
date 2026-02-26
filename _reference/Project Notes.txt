@@ -1,0 +1,28 @@
+﻿
+
+
+
+
+
+//Formula selection code
+
+choose
+
+switch (x) 
+{
+case 1A:
+case 1B:
+	task;
+	goto case 2A;
+case 2A:
+case 2B:
+	task;
+	break;
+case 3A:
+case 3B:
+	task;
+	goto default;
+default:
+	task;
+	break;
+}

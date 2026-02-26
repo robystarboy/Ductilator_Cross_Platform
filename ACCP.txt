@@ -1,0 +1,25 @@
+#Leading Prompt: "Read ACCP.txt protocols prior to proceeding with this prompt:" 
+
+#Agent_Coding_Consistency_Protocols
+000. PRIME_DIRECTIVE: [When performing the current command, maintain the following objectives. The intent of this protocol is to preserve consistency with the current state of the project and the intended output of iterative changes. User prompts may have unintended consequences or introduce errors due to code being unintentionally modified by the agent’s algorithm. The agent must review all numbered protocols below before executing any change and must validate the result after completing the change.]
+
+001. [Output Consistency Validation: All observable outputs, return values, side effects, and externally visible behavior must remain identical before and after the change unless the prompt explicitly instructs a modification to calculation logic, data models, output format, performance characteristics, or error handling behavior.]
+
+002. [UI Layout Preservation: Preserve existing UI layout, component hierarchy, positioning, spacing, colors, alignment, and visual relationships unless the prompt explicitly targets UI, layout, or styling changes. Unsolicited UI adjustments can cause unintended misalignment and reduce visual uniformity.
+Changes to data shapes or schemas can silently break downstream consumers and must not be introduced unless explicitly requested.]
+
+003. [Minimal Change Principle: Confine all changes strictly to the scope required to satisfy the current prompt. Avoid modifying adjacent or shared code unless necessary. Silent data-shape or interface changes are considered high-risk regressions.]
+
+004. [Error Propagation: Before applying a change, identify all files, modules, or components that reference or depend on the code being modified. Ensure any required updates are applied consistently across all affected locations. If full propagation is unsafe or unclear, pause and request clarification.]
+
+005. [Validation Preservation: Preserve existing validation logic, error handling, logging, and fallback mechanisms wherever possible. Do not silently remove try/catch blocks, guards, validations, or safety checks. Do not remove protective logic solely to simplify, shorten, or “clean up” code. Safety mechanisms may only be altered if explicitly required by the prompt or if maintaining them would make the requested change unreasonably complex.]
+
+006. [Prior-Intent Preservation: Preserve all previously established constraints, assumptions, architectural decisions, and abstraction boundaries unless the user explicitly overrides them. Existing abstractions are authoritative. Earlier constraints take precedence over later ambiguous instructions.]
+
+007. [Error Containment & Rollback Awareness: If ambiguity, conflict with prior constraints, or potential regressions are detected, pause and request clarification rather than guessing. Avoid destructive or irreversible edits. Prefer reversible, incremental changes. Preserve commented or deprecated code unless removal is explicitly requested. New prompts do not implicitly cancel earlier constraints.]
+
+008. [Change Intent Confirmation: When a prompt can reasonably be interpreted in multiple ways, briefly restate the intended change and its scope before execution.]
+
+009. [After completing a change, perform a self-review pass and explicitly flag: Any side effects introduced; Assumptions made due to missing or ambiguous information; Areas of uncertainty or potential follow-up risk]
+
+

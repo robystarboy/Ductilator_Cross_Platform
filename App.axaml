@@ -1,0 +1,25 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:Ductilator.Converters"
+             x:Class="Ductilator.App"
+             RequestedThemeVariant="Light">
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" always uses dark theme. "Light" always uses light theme. -->
+
+    <Application.Resources>
+        <!-- Global styles and resources -->
+        <converters:ReadOnlyBackgroundConverter x:Key="ReadOnlyBackgroundConverter" />
+        <converters:ReadOnlyForegroundConverter x:Key="ReadOnlyForegroundConverter" />
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <!-- Additional style definitions can go here -->
+        
+        <!-- Style for read-only TextBox to prevent hover color changes -->
+        <Style Selector="TextBox:readonly">
+            <Setter Property="Background" Value="#F0F0F0" />
+            <Setter Property="Foreground" Value="#555555" />
+            <Setter Property="BorderBrush" Value="#BDC3C7" />
+        </Style>
+    </Application.Styles>
+</Application>

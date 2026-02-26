@@ -1,0 +1,544 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+        xmlns:behaviors="clr-namespace:Ductilator.Behaviors"
+        x:Class="Ductilator.MainWindow"
+        Title="Ductilator - HVAC Duct Sizing Calculator"
+        Width="660"
+        Height="800"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Background="White">
+
+    <DockPanel LastChildFill="True">
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top" Background="White" BorderBrush="LightGray" BorderThickness="0,0,0,1" Padding="0">
+            <MenuItem Header="File" Padding="8,4">
+                <MenuItem Header="Exit" Click="OnFileExit" />
+            </MenuItem>
+            <MenuItem Header="View" Padding="8,4">
+                <MenuItem Header="Refresh Data" Click="OnViewRefresh" />
+            </MenuItem>
+            <MenuItem Header="Help" Padding="8,4">
+                <MenuItem Header="About" Click="OnHelpAbout" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Status Bar (optional - bottom) -->
+        <Border DockPanel.Dock="Bottom" 
+                Background="#F0F0F0" 
+                BorderBrush="LightGray" 
+                BorderThickness="0,1,0,0"
+                Padding="8,4">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" Foreground="DarkGray" />
+                <TextBlock Grid.Column="1" Text="{Binding WindowSizeText}" Foreground="Gray" Margin="20,0,0,0" />
+                <TextBlock Grid.Column="2" Text="{Binding VersionInfo}" Foreground="Gray" Margin="20,0,0,0" />
+            </Grid>
+        </Border>
+        
+        <!-- Main Content - Vertical Stack Layout -->
+        <DockPanel>
+            <!-- Standard Properties Section -->
+            <Border DockPanel.Dock="Top" 
+                    Padding="16,12"
+                    Background="White"
+                    BorderBrush="LightGray"
+                    BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0"
+                               Text="Standard Properties:" 
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Foreground="#2C3E50"
+                               Margin="0,0,12,0" />
+                    <ComboBox Grid.Column="1"
+                          Name="cboStandardProperties"
+                          SelectedIndex="{Binding SelectedConditionIndex, Mode=TwoWay}"
+                          MinWidth="280"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Center">
+                    <ComboBoxItem Content="68°F/20°C Air @ STP" />
+                    <ComboBoxItem Content="55°F/13°C Air @ 97% RH &amp; 1 ATM" />
+                    <ComboBoxItem Content="75°F/25°C Air @ 50% RH &amp; 1 ATM" />
+                    <ComboBoxItem Content="100°F/37°C Air @ 23% RH &amp; 1 ATM" />
+                    <ComboBoxItem Content="125°F/52°C Air @ 11% RH &amp; 1 ATM" />
+                </ComboBox>
+                </Grid>
+            </Border>
+            
+            <!-- Fluid Properties and Duct Parameters Container -->
+            <StackPanel Orientation="Vertical" Grid.IsSharedSizeScope="True">
+                <!-- Fluid Properties Section -->
+                <Border Background="#E8F0FF" 
+                        BorderBrush="#6BA3D4" 
+                        BorderThickness="0,0,0,2"
+                        Padding="12,6"
+                        Margin="0,6,0,0">
+                    <TextBlock Text="Fluid Properties" 
+                               FontSize="13" 
+                               FontWeight="Bold" 
+                               Foreground="#1A4F8F" />
+                </Border>
+                
+                <Border Padding="12,8"
+                        Background="White"
+                        BorderBrush="LightGray"
+                        BorderThickness="0,0,0,1">
+                <StackPanel Spacing="0">
+                    <!-- Header Row for Units -->
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" />
+                        <TextBlock Grid.Column="1" Text="Imperial" FontWeight="SemiBold" FontSize="11" Foreground="#495057" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="4" Text="Metric" FontWeight="SemiBold" FontSize="11" Foreground="#495057" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="7" />
+                    </Grid>
+                    
+                    <!-- Fluid Density -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding FluidProperties[0].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtFluidDensity_Imperial" Text="{Binding FluidProperties[0].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="White" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding FluidProperties[0].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtFluidDensity_Metric" Text="{Binding FluidProperties[0].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="White" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding FluidProperties[0].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Fluid Viscosity -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding FluidProperties[1].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtFluidViscosity_Imperial" Text="{Binding FluidProperties[1].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="White" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding FluidProperties[1].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtFluidViscosity_Metric" Text="{Binding FluidProperties[1].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="White" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding FluidProperties[1].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Specific Heat -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding FluidProperties[2].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtSpecificHeat_Imperial" Text="{Binding FluidProperties[2].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="White" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding FluidProperties[2].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtSpecificHeat_Metric" Text="{Binding FluidProperties[2].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="White" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding FluidProperties[2].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Energy Factor -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding FluidProperties[3].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtEnergyFactor_Imperial" Text="{Binding FluidProperties[3].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="White" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding FluidProperties[3].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtEnergyFactor_Metric" Text="{Binding FluidProperties[3].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="White" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding FluidProperties[3].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Duct Parameters Section -->
+            <Border Background="#E8F0FF" 
+                    BorderBrush="#6BA3D4" 
+                    BorderThickness="0,0,0,2"
+                    Padding="12,6"
+                    Margin="0,6,0,0">
+                <TextBlock Text="Duct Parameters" 
+                           FontSize="13" 
+                           FontWeight="Bold" 
+                           Foreground="#1A4F8F" />
+            </Border>
+            <Border Padding="12,8"
+                    Background="White"
+                    BorderBrush="LightGray"
+                    BorderThickness="0,0,0,1">
+                <StackPanel Spacing="0">
+                    <!-- Header Row for Units -->
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" />
+                        <TextBlock Grid.Column="1" Text="Imperial" FontWeight="SemiBold" FontSize="11" Foreground="#495057" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="4" Text="Metric" FontWeight="SemiBold" FontSize="11" Foreground="#495057" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="7" Text="Lock Value" FontWeight="SemiBold" FontSize="11" Foreground="#495057" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+                    
+                    <!-- Row 0: Flow Rate -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[0].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtFlowRate_Imperial" Text="{Binding DuctParameters[0].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[0].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[0].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[0].IsEffectivelyReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[0].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtFlowRate_Metric" Text="{Binding DuctParameters[0].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[0].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[0].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[0].IsEffectivelyReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[0].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <CheckBox Grid.Column="7" IsChecked="{Binding DuctParameters[0].IsLocked, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+                    
+                    <!-- Row 1: Head Loss -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[1].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtHeadLoss_Imperial" Text="{Binding DuctParameters[1].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[1].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[1].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[1].IsEffectivelyReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[1].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtHeadLoss_Metric" Text="{Binding DuctParameters[1].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[1].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[1].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[1].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <CheckBox Grid.Column="7" IsChecked="{Binding DuctParameters[1].IsLocked, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+                    
+                    <!-- Row 2: Fluid Velocity -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[2].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtFluidVelocity_Imperial" Text="{Binding DuctParameters[2].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[2].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[2].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[2].IsEffectivelyReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[2].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtFluidVelocity_Metric" Text="{Binding DuctParameters[2].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[2].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[2].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[2].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <CheckBox Grid.Column="7" IsChecked="{Binding DuctParameters[2].IsLocked, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+                    
+                    <!-- Row 3: Equivalent Diameter -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[3].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtEquivalentDiameter_Imperial" Text="{Binding DuctParameters[3].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[3].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[3].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[3].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtEquivalentDiameter_Metric" Text="{Binding DuctParameters[3].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[3].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[3].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[3].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <CheckBox Grid.Column="7" IsChecked="{Binding DuctParameters[3].IsLocked, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+                    
+                    <!-- Row 4: Duct Size X -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[4].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtDuctSizeX_Imperial" Text="{Binding DuctParameters[4].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[4].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[4].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[4].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtDuctSizeX_Metric" Text="{Binding DuctParameters[4].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[4].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[4].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[4].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <CheckBox Grid.Column="7" IsChecked="{Binding DuctParameters[4].IsLocked, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+                    
+                    <!-- Row 5: Duct Size Y -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[5].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtDuctSizeY_Imperial" Text="{Binding DuctParameters[5].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[5].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[5].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[5].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtDuctSizeY_Metric" Text="{Binding DuctParameters[5].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[5].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[5].IsEffectivelyReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[5].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <CheckBox Grid.Column="7" IsChecked="{Binding DuctParameters[5].IsLocked, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+                    
+                    <!-- Row 6: Equivalent Diameter (Calculated) -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[6].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtEquivalentDiameterCalc_Imperial" Text="{Binding DuctParameters[6].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[6].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[6].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[6].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtEquivalentDiameterCalc_Metric" Text="{Binding DuctParameters[6].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[6].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[6].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[6].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Row 7: Flow Area -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[7].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtFlowArea_Imperial" Text="{Binding DuctParameters[7].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[7].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[7].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[7].IsReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[7].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtFlowArea_Metric" Text="{Binding DuctParameters[7].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[7].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[7].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[7].IsReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[7].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Row 8: Fluid Velocity (Calculated) -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[8].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtFluidVelocityCalc_Imperial" Text="{Binding DuctParameters[8].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[8].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[8].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[8].IsReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[8].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtFluidVelocityCalc_Metric" Text="{Binding DuctParameters[8].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[8].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[8].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[8].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Row 9: Reynolds Number -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[9].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtReynoldsNumber_Imperial" Text="{Binding DuctParameters[9].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[9].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[9].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[9].IsReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[9].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtReynoldsNumber_Metric" Text="{Binding DuctParameters[9].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[9].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[9].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[9].IsReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[9].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Row 10: Friction Factor -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[10].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtFrictionFactor_Imperial" Text="{Binding DuctParameters[10].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[10].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[10].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[10].IsReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[10].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtFrictionFactor_Metric" Text="{Binding DuctParameters[10].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[10].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[10].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[10].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Row 11: Velocity Pressure -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[11].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtVelocityPressure_Imperial" Text="{Binding DuctParameters[11].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[11].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[11].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[11].IsReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[11].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtVelocityPressure_Metric" Text="{Binding DuctParameters[11].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[11].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[11].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" IsReadOnly="{Binding DuctParameters[11].IsReadOnly}" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[11].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                    
+                    <!-- Row 12: Head Loss (Calculated) -->
+                    <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="ImperialValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ImperialUnit" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="MetricValue" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MetricUnit" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Lock" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DuctParameters[12].Name}" FontWeight="SemiBold" FontSize="12" Foreground="#2C3E50" VerticalAlignment="Center" Margin="0,0,6,0" Width="170" />
+                        <TextBox Grid.Column="1" Name="txtHeadLossCalc_Imperial" Text="{Binding DuctParameters[12].ImperialValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[12].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[12].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="2" Text="{Binding DuctParameters[12].ImperialUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                        <TextBox Grid.Column="4" Name="txtHeadLossCalc_Metric" Text="{Binding DuctParameters[12].MetricValueText, Mode=TwoWay}" Margin="3,0" Padding="6,4" BorderBrush="#BDC3C7" Background="{Binding DuctParameters[12].IsReadOnly, Converter={StaticResource ReadOnlyBackgroundConverter}}" Foreground="{Binding DuctParameters[12].IsReadOnly, Converter={StaticResource ReadOnlyForegroundConverter}}" FontFamily="Consolas,Monaco,monospace" FontSize="12" VerticalContentAlignment="Center" MinHeight="26" HorizontalAlignment="Stretch">
+                            <i:Interaction.Behaviors><behaviors:NumericTextBoxBehavior /></i:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Grid.Column="5" Text="{Binding DuctParameters[12].MetricUnit}" VerticalAlignment="Center" Foreground="#34495E" FontSize="12" Width="85" Margin="3,0,0,0" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+            </StackPanel>
+        </DockPanel>
+    </DockPanel>
+</Window>

@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BuiltInComputedProperties>AvaloniaResource</BuiltInComputedProperties>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <AssemblyName>Ductilator_Cross_Platform</AssemblyName>
+    <RootNamespace>Ductilator_Cross_Platform</RootNamespace>
+
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+
+    <Version>2026.02.24.001</Version>
+    <AssemblyVersion>2026.02.24.001</AssemblyVersion>
+    <FileVersion>2026.02.24.001</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Remove="**/*.axaml" />
+    <AvaloniaXaml Include="App.axaml" />
+    <AvaloniaXaml Include="MainWindow.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Remove="**/App-Template.axaml" />
+    <AvaloniaXaml Remove="**/MainWindow-Template.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**/*-Template.cs" />
+    <Compile Remove="**/*-Template.axaml.cs" />
+    <Compile Remove="Form1.Designer.cs" />
+    <Compile Remove="Form1.cs" />
+    <EmbeddedResource Remove="Form1.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include=".git\hooks\post-commit" />
+  </ItemGroup>
+
+</Project>

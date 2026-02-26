@@ -1,0 +1,6 @@
+{
+    "protobuf.protoc.path": "/Users/robystar/Library/Application Support/Code/User/globalStorage/drblury.protobuf-vsc/bin/protoc",
+    "protobuf.buf.path": "buf",
+    "protobuf.externalLinter.bufPath": "buf",
+    "protobuf.grpcurl.path": "/Users/robystar/Library/Application Support/Code/User/globalStorage/drblury.protobuf-vsc/bin/grpcurl"
+}

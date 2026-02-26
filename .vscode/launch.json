@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Console Test App",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/DuctilatorTest/bin/Debug/net8.0/DuctilatorTest.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/DuctilatorTest",
+            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "env": {
+                "DOTNET_ROOT": "/opt/homebrew/opt/dotnet@8/libexec",
+                "PATH": "/opt/homebrew/opt/dotnet@8/bin:${env:PATH}"
+            }
+        },
+        {
+            "name": "Run App (Terminal)",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "/opt/homebrew/opt/dotnet@8/bin/dotnet",
+            "args": [
+                "${workspaceFolder}/DuctilatorTest/bin/Debug/net8.0/DuctilatorTest.dll"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "MIMode": "lldb"
+        }
+    ]
+}
