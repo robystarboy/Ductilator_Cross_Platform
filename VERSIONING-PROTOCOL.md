@@ -41,11 +41,15 @@
 
 ### Version Format:
 ```
-YYYYMMDD.BuildNumber
+YYYY.DDD.0.RRR
 
-Example: 20260226.001
-- 20260226 = February 26, 2026 (YYYYMMDD concatenated)
-- 001 = Build number (resets on new day, increments on same day)
+Example: 2026.057.0.004
+- 2026 = Year
+- 057 = Day of year (57th day = Feb 26, 2026)
+- 0 = Separator (padding for .NET compatibility)
+- 004 = Revision/Build number (increments on same day, resets on new day)
+
+Format is compatible with .NET AssemblyVersion requirements: major.minor.build.revision
 ```
 
 ### How the Versioning Works:
@@ -56,10 +60,10 @@ Example: 20260226.001
 
 **At Commit Time (Pre-commit Hook):**
 1. Hook reads current version from `.csproj`
-2. Gets today's date in YYYYMMDD format
-3. Compares date with version's date component
-4. If dates match: increment build number (001 → 002 → 003, etc.)
-5. If new day: reset build number to 001 and update date
+2. Gets today's year and day-of-year (001-366)
+3. Compares day-of-year with version's day-of-year component
+4. If day-of-year matches: increment revision number (001 → 002 → 003, etc.)
+5. If new day: reset revision to 001 and update day-of-year
 6. Updates both `.csproj` and `MainViewModel.cs` with new version
 7. Automatically stages both files for commit
 8. Commit proceeds with updated version
@@ -74,8 +78,8 @@ Example: 20260226.001
 - Updated automatically with each commit
 
 ### Current Version Status:
-- Last updated: February 26, 2026
-- Version: `20260226.003`
+- Last updated: February 26, 2026 (Day 57 of year)
+- Version: `2026.57.0.001`
 
 ### Files Modified/Created:
 - ✅ `.git/hooks/pre-commit` - Hook implementation

@@ -3,8 +3,9 @@
 # This hook updates the version in the .csproj file and MainViewModel.cs
 # before each commit
 
-# Get the current date in YYYYMMDD format
-DATE=$(date +%Y%m%d)
+# Get the current date components
+YEAR=$(date +%Y)
+DAY_OF_YEAR=$(date +%j)  # Day of year (001-366)
 
 # Path to the .csproj file
 CSPROJ_FILE="Ductilator_Cross_Platform.csproj"
@@ -15,36 +16,38 @@ get_current_version() {
     grep -m 1 '<Version>' "$CSPROJ_FILE" | sed -E 's/.*<Version>([^<]+)<\/Version>.*/\1/'
 }
 
-# Function to extract version date and build number
+# Function to extract version components
 extract_version_components() {
     local version=$1
-    local date_part=$(echo "$version" | cut -d. -f1)
-    local build_number=$(echo "$version" | cut -d. -f2)
-    echo "$date_part:$build_number"
+    local year=$(echo "$version" | cut -d. -f1)
+    local dayofyear=$(echo "$version" | cut -d. -f2)
+    local revision=$(echo "$version" | cut -d. -f4)
+    echo "$year:$dayofyear:$revision"
 }
 
-# Function to increment build number
-increment_build() {
+# Function to increment revision number
+increment_revision() {
     local components=$1
-    local date_part=$(echo "$components" | cut -d: -f1)
-    local build_number=$(echo "$components" | cut -d: -f2)
+    local year=$(echo "$components" | cut -d: -f1)
+    local dayofyear=$(echo "$components" | cut -d: -f2)
+    local revision=$(echo "$components" | cut -d: -f3)
     
-    # If date matches today, increment build number; otherwise reset to 001
-    if [ "$date_part" = "$DATE" ]; then
-        build_number=$((build_number + 1))
+    # If day of year matches today, increment revision; otherwise reset to 001
+    if [ "$dayofyear" = "$DAY_OF_YEAR" ] && [ "$year" = "$YEAR" ]; then
+        revision=$((revision + 1))
     else
-        build_number=1
+        revision=1
     fi
     
-    # Pad build number to 3 digits
-    build_number=$(printf "%03d" "$build_number")
-    echo "$DATE.$build_number"
+    # Pad revision to 3 digits
+    revision=$(printf "%03d" "$revision")
+    echo "$YEAR.$DAY_OF_YEAR.0.$revision"
 }
 
 # Get current version and calculate new version
 CURRENT_VERSION=$(get_current_version)
 COMPONENTS=$(extract_version_components "$CURRENT_VERSION")
-NEW_VERSION=$(increment_build "$COMPONENTS")
+NEW_VERSION=$(increment_revision "$COMPONENTS")
 
 # Only update if version has changed
 if [ "$CURRENT_VERSION" != "$NEW_VERSION" ]; then
@@ -53,7 +56,7 @@ if [ "$CURRENT_VERSION" != "$NEW_VERSION" ]; then
     sed -i '' "s/<AssemblyVersion>.*<\/AssemblyVersion>/<AssemblyVersion>$NEW_VERSION<\/AssemblyVersion>/g" "$CSPROJ_FILE"
     sed -i '' "s/<FileVersion>.*<\/FileVersion>/<FileVersion>$NEW_VERSION<\/FileVersion>/g" "$CSPROJ_FILE"
     
-    # Update MainViewModel.cs
+    # Update MainViewModel.cs - extract just the version part for display
     sed -i '' "s/_versionInfo = \"Version: .*\";/_versionInfo = \"Version: $NEW_VERSION\";/g" "$VIEWMODEL_FILE"
     
     # Stage the updated files

@@ -47,9 +47,11 @@ This project can be opened and developed using:
 
 This project uses Git hooks to automatically update version numbers on each commit.
 
-**Version Format:** `YYYYMMDD.BuildNumber`
-- `YYYYMMDD` - The commit date (year, month, day concatenated)
-- `BuildNumber` - Incremented with each commit on the same day, resets to 001 on new days
+**Version Format:** `YYYY.DDD.0.RRR`
+- `YYYY` - Year (e.g., 2026)
+- `DDD` - Day of year (001-366)
+- `0` - Separator
+- `RRR` - Revision/Build number (001-999, incremented per commit on same day)
 
 **How it works:**
 1. On each commit, the pre-commit hook automatically updates the version in:

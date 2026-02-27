@@ -13,9 +13,9 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
 
-    <Version>20260226.004</Version>
-    <AssemblyVersion>20260226.004</AssemblyVersion>
-    <FileVersion>20260226.004</FileVersion>
+    <Version>2026.057.0.001</Version>
+    <AssemblyVersion>2026.057.0.001</AssemblyVersion>
+    <FileVersion>2026.057.0.001</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
