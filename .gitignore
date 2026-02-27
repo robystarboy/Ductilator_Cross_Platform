@@ -1,3 +1,19 @@
+# Ignore Rider and VS Code project files
+.idea/
+.vscode/
+# Ignore build outputs
+bin/
+obj/
+# Ignore user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+# Ignore hooks in .git/hooks but track /hooks/
+.git/hooks/
 # Build results
 [Bb]in/
 [Oo]bj/

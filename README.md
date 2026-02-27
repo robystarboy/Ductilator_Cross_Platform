@@ -47,18 +47,21 @@ This project can be opened and developed using:
 
 This project uses Git hooks to automatically update version numbers on each commit.
 
-**Version Format:** `YYYY.DDD.0.RRR`
+**Version Format (Display & Tracking):** `YYYYMMDD.###`
 - `YYYY` - Year (e.g., 2026)
-- `DDD` - Day of year (001-366)
-- `0` - Separator
-- `RRR` - Revision/Build number (001-999, incremented per commit on same day)
+- `MM`   - Month (01-12)
+- `DD`   - Day of month (01-31)
+- `###`  - Daily revision number (001-999, incremented per commit on the same day)
 
 **How it works:**
 1. On each commit, the pre-commit hook automatically updates the version in:
-   - `Ductilator_Cross_Platform.csproj` (Version, AssemblyVersion, FileVersion)
-   - `ViewModels/MainViewModel.cs` (VersionInfo property)
-   
-2. The version is displayed in the status bar at the bottom of the application window
+   - `Ductilator_Cross_Platform.csproj` (`<Version>` field only, using `YYYYMMDD.###`)
+   - `ViewModels/MainViewModel.cs` (the `VersionInfo` property, for display in the UI)
+2. The version is displayed in the status bar at the bottom of the application window.
+
+**.NET Assembly Versioning:**
+- The `<AssemblyVersion>` and `<FileVersion>` fields in the `.csproj` are always set to `1.0.0.0` to satisfy .NET's required format (`major.minor.build.revision`).
+- This allows you to use your preferred version format for display and tracking, while maintaining compatibility with .NET build requirements.
 
 **First-time setup:**
 ```bash
@@ -100,4 +103,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Acknowledgments
 
 Calculations based on ASHRAE Handbook - Fundamentals standards.
-

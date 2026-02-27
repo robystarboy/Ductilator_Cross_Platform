@@ -7,13 +7,14 @@
 1. **Pre-commit Hook Created** (`.git/hooks/pre-commit`)
    - Automatically updates version on each commit
    - Reads current version from `.csproj` file
-   - Implements versioning protocol: `YYYY.MM.DD.BuildNumber`
+   - Implements versioning protocol: `<Version>` uses `YYYYMMDD.###` (e.g., `20260227.001`)
    - Logic:
-     - If commit is on same day as previous: increment build number
-     - If commit is on new day: reset build number to 001
+     - If commit is on same day as previous: increment revision number
+     - If commit is on new day: reset revision number to 001
    - Updates files:
-     - `Ductilator_Cross_Platform.csproj` (Version, AssemblyVersion, FileVersion tags)
+     - `Ductilator_Cross_Platform.csproj` (`<Version>` tag only)
      - `ViewModels/MainViewModel.cs` (VersionInfo property)
+     - `<AssemblyVersion>` and `<FileVersion>` are always set to `1.0.0.0` for .NET compatibility
 
 2. **Post-commit Hook Created** (`.git/hooks/post-commit`)
    - Automatically pushes commits to GitHub after local commit
@@ -41,15 +42,15 @@
 
 ### Version Format:
 ```
-YYYY.DDD.0.RRR
+YYYYMMDD.###
 
-Example: 2026.057.0.004
+Example: 20260227.001
 - 2026 = Year
-- 057 = Day of year (57th day = Feb 26, 2026)
-- 0 = Separator (padding for .NET compatibility)
-- 004 = Revision/Build number (increments on same day, resets on new day)
+- 02 = Month
+- 27 = Day
+- 001 = Revision/Build number (increments on same day, resets on new day)
 
-Format is compatible with .NET AssemblyVersion requirements: major.minor.build.revision
+Format is used for <Version> and display. <AssemblyVersion> and <FileVersion> are always 1.0.0.0 for .NET compatibility.
 ```
 
 ### How the Versioning Works:
@@ -60,13 +61,14 @@ Format is compatible with .NET AssemblyVersion requirements: major.minor.build.r
 
 **At Commit Time (Pre-commit Hook):**
 1. Hook reads current version from `.csproj`
-2. Gets today's year and day-of-year (001-366)
-3. Compares day-of-year with version's day-of-year component
-4. If day-of-year matches: increment revision number (001 → 002 → 003, etc.)
-5. If new day: reset revision to 001 and update day-of-year
+2. Gets today's date in `YYYYMMDD` format
+3. Compares date with version's date component
+4. If date matches: increment revision number (001 → 002 → 003, etc.)
+5. If new day: reset revision to 001 and update date
 6. Updates both `.csproj` and `MainViewModel.cs` with new version
-7. Automatically stages both files for commit
-8. Commit proceeds with updated version
+7. Sets `<AssemblyVersion>` and `<FileVersion>` to `1.0.0.0`
+8. Automatically stages both files for commit
+9. Commit proceeds with updated version
 
 **After Commit (Post-commit Hook):**
 1. Hook automatically pushes to GitHub
@@ -78,8 +80,8 @@ Format is compatible with .NET AssemblyVersion requirements: major.minor.build.r
 - Updated automatically with each commit
 
 ### Current Version Status:
-- Last updated: February 26, 2026 (Day 57 of year)
-- Version: `2026.57.0.001`
+- Last updated: February 27, 2026
+- Version: `20260227.001`
 
 ### Files Modified/Created:
 - ✅ `.git/hooks/pre-commit` - Hook implementation
@@ -131,4 +133,3 @@ Format is compatible with .NET AssemblyVersion requirements: major.minor.build.r
 ✅ Version displays in status bar
 ✅ Multiple commits on same day increment build number
 ✅ New day commits reset build number
-

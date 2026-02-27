@@ -10,37 +10,33 @@ The version format `20260226.004` was not compatible with .NET's `AssemblyVersio
 
 ## Solution
 
-Updated the version format to: **`YYYY.DDD.0.RRR`**
+Updated the versioning protocol to:
+- `<Version>` uses **`YYYYMMDD.###`** (e.g., `20260227.001`) for display and tracking.
+- `<AssemblyVersion>` and `<FileVersion>` are always set to **`1.0.0.0`** for .NET compatibility.
 
-Where:
-- **YYYY** = Year (e.g., 2026)
-- **DDD** = Day of year (001-366, e.g., 057 for February 26)
-- **0** = Separator (padding for .NET compatibility)
-- **RRR** = Revision/Build number (001-999)
+## Current Version Example
 
-## Current Version
-
-**`2026.057.0.001`**
+**`20260227.001`**
 - Year: 2026
-- Day: 057 (February 26, 2026)
-- Separator: 0
-- Revision: 001
+- Month: 02
+- Day: 27
+- Revision: 001 (first commit of the day)
 
 ## Files Updated
 
 1. ✅ **Ductilator_Cross_Platform.csproj**
-   - Version: `2026.057.0.001`
-   - AssemblyVersion: `2026.057.0.001`
-   - FileVersion: `2026.057.0.001`
+   - Version: `20260227.001`
+   - AssemblyVersion: `1.0.0.0`
+   - FileVersion: `1.0.0.0`
 
 2. ✅ **ViewModels/MainViewModel.cs**
-   - VersionInfo: `"Version: 2026.057.0.001"`
+   - VersionInfo: `"Version: 20260227.001"`
    - Displays in status bar
 
 3. ✅ **Pre-commit Hook** (`.git/hooks/pre-commit`)
-   - Updated to generate format: `YYYY.DDD.0.RRR`
-   - Uses `date +%j` for day of year
+   - Updated to generate format: `YYYYMMDD.###`
    - Increments revision on same day, resets on new day
+   - Keeps AssemblyVersion and FileVersion at `1.0.0.0`
 
 4. ✅ **Repository Hooks** (`hooks/pre-commit`)
    - Synced with updated hook
@@ -54,25 +50,23 @@ Where:
 ### Version Increment Logic
 
 **Same Day Multiple Commits:**
-- 1st commit: `2026.057.0.001`
-- 2nd commit: `2026.057.0.002`
-- 3rd commit: `2026.057.0.003`
+- 1st commit: `20260227.001`
+- 2nd commit: `20260227.002`
+- 3rd commit: `20260227.003`
 
 **New Day Commit:**
-- Feb 27: `2026.058.0.001` (day increments, revision resets)
+- Feb 28: `20260228.001` (date changes, revision resets)
 
 ### .NET Compliance
 
-The format now correctly complies with .NET versioning requirements:
-- Each component is a numeric value
-- Components are separated by dots
-- Follows: `major.minor.build.revision` pattern
-- No more CS7034 compilation errors
+- `<AssemblyVersion>` and `<FileVersion>` are always set to `1.0.0.0` to satisfy .NET requirements.
+- `<Version>` uses the preferred format for display and tracking.
+- No more CS7034 compilation errors.
 
 ## Commits
 
 The fix includes a single commit:
-- **Message**: "Fix version format to comply with .NET AssemblyVersion requirements"
+- **Message**: "Fix version format to comply with .NET AssemblyVersion requirements and support custom display version."
 - **Changes**: 
   - Version format changed
   - Pre-commit hook updated
@@ -93,4 +87,3 @@ The automatic versioning system is now fully operational and compliant with .NET
 2. Files will be updated automatically
 3. Status bar will display new version
 4. Changes will push to GitHub
-

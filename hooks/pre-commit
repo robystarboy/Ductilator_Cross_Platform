@@ -3,58 +3,58 @@
 # This hook updates the version in the .csproj file and MainViewModel.cs
 # before each commit
 
-# Get the current date components
-YEAR=$(date +%Y)
-DAY_OF_YEAR=$(date +%j)  # Day of year (001-366)
+
+# Get the current date in YYYYMMDD format
+TODAY=$(date +%Y%m%d)
 
 # Path to the .csproj file
 CSPROJ_FILE="Ductilator_Cross_Platform.csproj"
 VIEWMODEL_FILE="ViewModels/MainViewModel.cs"
+
 
 # Function to extract current version
 get_current_version() {
     grep -m 1 '<Version>' "$CSPROJ_FILE" | sed -E 's/.*<Version>([^<]+)<\/Version>.*/\1/'
 }
 
-# Function to extract version components
+
+# Function to extract version components (YYYYMMDD.###)
 extract_version_components() {
     local version=$1
-    local year=$(echo "$version" | cut -d. -f1)
-    local dayofyear=$(echo "$version" | cut -d. -f2)
-    local revision=$(echo "$version" | cut -d. -f4)
-    echo "$year:$dayofyear:$revision"
+    local datepart=$(echo "$version" | cut -d. -f1)
+    local revision=$(echo "$version" | cut -d. -f2)
+    echo "$datepart:$revision"
 }
 
-# Function to increment revision number
+
+# Function to increment revision number (ACVP protocol)
 increment_revision() {
     local components=$1
-    local year=$(echo "$components" | cut -d: -f1)
-    local dayofyear=$(echo "$components" | cut -d: -f2)
-    local revision=$(echo "$components" | cut -d: -f3)
-    
-    # If day of year matches today, increment revision; otherwise reset to 001
-    if [ "$dayofyear" = "$DAY_OF_YEAR" ] && [ "$year" = "$YEAR" ]; then
-        revision=$((revision + 1))
+    local datepart=$(echo "$components" | cut -d: -f1)
+    local revision=$(echo "$components" | cut -d: -f2)
+    if [ "$datepart" = "$TODAY" ]; then
+        revision=$((10#$revision + 1))
     else
         revision=1
     fi
-    
-    # Pad revision to 3 digits
     revision=$(printf "%03d" "$revision")
-    echo "$YEAR.$DAY_OF_YEAR.0.$revision"
+    echo "$TODAY.$revision"
 }
+
 
 # Get current version and calculate new version
 CURRENT_VERSION=$(get_current_version)
 COMPONENTS=$(extract_version_components "$CURRENT_VERSION")
 NEW_VERSION=$(increment_revision "$COMPONENTS")
 
+
 # Only update if version has changed
 if [ "$CURRENT_VERSION" != "$NEW_VERSION" ]; then
     # Update .csproj file
     sed -i '' "s/<Version>.*<\/Version>/<Version>$NEW_VERSION<\/Version>/g" "$CSPROJ_FILE"
-    sed -i '' "s/<AssemblyVersion>.*<\/AssemblyVersion>/<AssemblyVersion>$NEW_VERSION<\/AssemblyVersion>/g" "$CSPROJ_FILE"
-    sed -i '' "s/<FileVersion>.*<\/FileVersion>/<FileVersion>$NEW_VERSION<\/FileVersion>/g" "$CSPROJ_FILE"
+    # AssemblyVersion and FileVersion must be valid 4-part integers for .NET
+    sed -i '' "s/<AssemblyVersion>.*<\/AssemblyVersion>/<AssemblyVersion>1.0.0.0<\/AssemblyVersion>/g" "$CSPROJ_FILE"
+    sed -i '' "s/<FileVersion>.*<\/FileVersion>/<FileVersion>1.0.0.0<\/FileVersion>/g" "$CSPROJ_FILE"
     
     # Update MainViewModel.cs - extract just the version part for display
     sed -i '' "s/_versionInfo = \"Version: .*\";/_versionInfo = \"Version: $NEW_VERSION\";/g" "$VIEWMODEL_FILE"
@@ -66,4 +66,3 @@ if [ "$CURRENT_VERSION" != "$NEW_VERSION" ]; then
 fi
 
 exit 0
-
