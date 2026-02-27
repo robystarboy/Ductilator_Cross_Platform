@@ -41,12 +41,10 @@
 
 ### Version Format:
 ```
-YYYY.MM.DD.BuildNumber
+YYYYMMDD.BuildNumber
 
-Example: 2026.02.26.001
-- 2026 = Year
-- 02 = Month (February)
-- 26 = Day
+Example: 20260226.001
+- 20260226 = February 26, 2026 (YYYYMMDD concatenated)
 - 001 = Build number (resets on new day, increments on same day)
 ```
 
@@ -58,7 +56,7 @@ Example: 2026.02.26.001
 
 **At Commit Time (Pre-commit Hook):**
 1. Hook reads current version from `.csproj`
-2. Gets today's date in YYYY.MM.DD format
+2. Gets today's date in YYYYMMDD format
 3. Compares date with version's date component
 4. If dates match: increment build number (001 → 002 → 003, etc.)
 5. If new day: reset build number to 001 and update date
@@ -77,7 +75,7 @@ Example: 2026.02.26.001
 
 ### Current Version Status:
 - Last updated: February 26, 2026
-- Version: `2026.02.26.001`
+- Version: `20260226.003`
 
 ### Files Modified/Created:
 - ✅ `.git/hooks/pre-commit` - Hook implementation

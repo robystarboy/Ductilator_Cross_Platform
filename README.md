@@ -47,8 +47,8 @@ This project can be opened and developed using:
 
 This project uses Git hooks to automatically update version numbers on each commit.
 
-**Version Format:** `YYYY.MM.DD.BuildNumber`
-- `YYYY.MM.DD` - The commit date
+**Version Format:** `YYYYMMDD.BuildNumber`
+- `YYYYMMDD` - The commit date (year, month, day concatenated)
 - `BuildNumber` - Incremented with each commit on the same day, resets to 001 on new days
 
 **How it works:**

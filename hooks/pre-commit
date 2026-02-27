@@ -3,8 +3,8 @@
 # This hook updates the version in the .csproj file and MainViewModel.cs
 # before each commit
 
-# Get the current date in YYYY.MM.DD format
-DATE=$(date +%Y.%m.%d)
+# Get the current date in YYYYMMDD format
+DATE=$(date +%Y%m%d)
 
 # Path to the .csproj file
 CSPROJ_FILE="Ductilator_Cross_Platform.csproj"
@@ -18,8 +18,8 @@ get_current_version() {
 # Function to extract version date and build number
 extract_version_components() {
     local version=$1
-    local date_part=$(echo "$version" | cut -d. -f1-3)
-    local build_number=$(echo "$version" | cut -d. -f4)
+    local date_part=$(echo "$version" | cut -d. -f1)
+    local build_number=$(echo "$version" | cut -d. -f2)
     echo "$date_part:$build_number"
 }
 
