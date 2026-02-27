@@ -14,7 +14,7 @@ namespace Ductilator.ViewModels;
 public class MainViewModel : INotifyPropertyChanged
 {
     private string _statusMessage = "Ready";
-    private string _versionInfo = "Version: 2026.02.26.002";
+    private string _versionInfo = "Version: 2026.02.26.003";
     private int _selectedConditionIndex = 0;
     private bool _isInitializing = true;
     private bool _isCalculating = false;
