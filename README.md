@@ -66,7 +66,7 @@ Ductilator_Cross_Platform/
 
 ## License
 
-[Choose an appropriate license - MIT, Apache 2.0, GPL, etc.]
+MIT License - See [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
