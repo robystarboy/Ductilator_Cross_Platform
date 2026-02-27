@@ -1,0 +1,26 @@
+#!/bin/bash
+# Post-commit hook to automatically push changes to GitHub
+# This hook will push your commits to the remote repository
+
+# Check if remote exists
+REMOTE=$(git config --get remote.origin.url)
+
+if [ -z "$REMOTE" ]; then
+    echo "⚠ No remote repository configured. Skipping push."
+    exit 0
+fi
+
+# Get current branch name
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Push to remote
+echo "📤 Pushing to remote repository..."
+git push origin "$BRANCH" 2>&1 | tail -5
+
+if [ $? -eq 0 ]; then
+    echo "✓ Successfully pushed to GitHub"
+else
+    echo "⚠ Warning: Push to GitHub failed (may be offline or network issue)"
+    exit 0  # Don't fail the commit
+fi
+

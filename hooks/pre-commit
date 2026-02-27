@@ -1,0 +1,66 @@
+#!/bin/bash
+# Pre-commit hook to automatically update version numbers
+# This hook updates the version in the .csproj file and MainViewModel.cs
+# before each commit
+
+# Get the current date in YYYY.MM.DD format
+DATE=$(date +%Y.%m.%d)
+
+# Path to the .csproj file
+CSPROJ_FILE="Ductilator_Cross_Platform.csproj"
+VIEWMODEL_FILE="ViewModels/MainViewModel.cs"
+
+# Function to extract current version
+get_current_version() {
+    grep -m 1 '<Version>' "$CSPROJ_FILE" | sed -E 's/.*<Version>([^<]+)<\/Version>.*/\1/'
+}
+
+# Function to extract version date and build number
+extract_version_components() {
+    local version=$1
+    local date_part=$(echo "$version" | cut -d. -f1-3)
+    local build_number=$(echo "$version" | cut -d. -f4)
+    echo "$date_part:$build_number"
+}
+
+# Function to increment build number
+increment_build() {
+    local components=$1
+    local date_part=$(echo "$components" | cut -d: -f1)
+    local build_number=$(echo "$components" | cut -d: -f2)
+    
+    # If date matches today, increment build number; otherwise reset to 001
+    if [ "$date_part" = "$DATE" ]; then
+        build_number=$((build_number + 1))
+    else
+        build_number=1
+    fi
+    
+    # Pad build number to 3 digits
+    build_number=$(printf "%03d" "$build_number")
+    echo "$DATE.$build_number"
+}
+
+# Get current version and calculate new version
+CURRENT_VERSION=$(get_current_version)
+COMPONENTS=$(extract_version_components "$CURRENT_VERSION")
+NEW_VERSION=$(increment_build "$COMPONENTS")
+
+# Only update if version has changed
+if [ "$CURRENT_VERSION" != "$NEW_VERSION" ]; then
+    # Update .csproj file
+    sed -i '' "s/<Version>.*<\/Version>/<Version>$NEW_VERSION<\/Version>/g" "$CSPROJ_FILE"
+    sed -i '' "s/<AssemblyVersion>.*<\/AssemblyVersion>/<AssemblyVersion>$NEW_VERSION<\/AssemblyVersion>/g" "$CSPROJ_FILE"
+    sed -i '' "s/<FileVersion>.*<\/FileVersion>/<FileVersion>$NEW_VERSION<\/FileVersion>/g" "$CSPROJ_FILE"
+    
+    # Update MainViewModel.cs
+    sed -i '' "s/_versionInfo = \"Version: .*\";/_versionInfo = \"Version: $NEW_VERSION\";/g" "$VIEWMODEL_FILE"
+    
+    # Stage the updated files
+    git add "$CSPROJ_FILE" "$VIEWMODEL_FILE"
+    
+    echo "✓ Version updated from $CURRENT_VERSION to $NEW_VERSION"
+fi
+
+exit 0
+

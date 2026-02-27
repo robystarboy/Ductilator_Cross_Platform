@@ -14,6 +14,9 @@ bld/
 .vs/
 .vsconfig
 
+# Git configuration (hooks are in /hooks directory for distribution)
+.git/hooks/
+
 # JetBrains Rider
 .idea/.idea.*/
 

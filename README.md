@@ -43,6 +43,29 @@ This project can be opened and developed using:
 - JetBrains Rider
 - Visual Studio 2022
 
+### Automatic Versioning Protocol
+
+This project uses Git hooks to automatically update version numbers on each commit.
+
+**Version Format:** `YYYY.MM.DD.BuildNumber`
+- `YYYY.MM.DD` - The commit date
+- `BuildNumber` - Incremented with each commit on the same day, resets to 001 on new days
+
+**How it works:**
+1. On each commit, the pre-commit hook automatically updates the version in:
+   - `Ductilator_Cross_Platform.csproj` (Version, AssemblyVersion, FileVersion)
+   - `ViewModels/MainViewModel.cs` (VersionInfo property)
+   
+2. The version is displayed in the status bar at the bottom of the application window
+
+**First-time setup:**
+```bash
+# After cloning the repository
+./setup-hooks.sh
+```
+
+This will install the Git hooks that enable automatic versioning.
+
 ## Project Structure
 
 ```
